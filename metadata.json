@@ -1,0 +1,10 @@
+{
+  "name": "KOVAI KALAIMAGAL COLLEGE OF ARTS AND SCIENCE - Blockchain Certificate Verification System",
+  "description": "Official blockchain credential issuance and tamper-proof verification portal for Kovai Kalaimagal College of Arts and Science. Certified by Principal Dr. N. MALA.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
