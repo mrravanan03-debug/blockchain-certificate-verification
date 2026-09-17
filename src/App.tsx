@@ -16,6 +16,34 @@ export default function App() {
   const [certificates, setCertificates] = useState<CertificateData[]>([]);
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateData>(INITIAL_STUDENT_CERT);
   const [verifyQuery, setVerifyQuery] = useState<string>('CERT-GENESIS-2026-001');
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isFullWidth, setIsFullWidth] = useState<boolean>(false);
+
+  // Fullscreen state listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn('Fullscreen request failed:', err);
+    }
+  };
+
+  const handleToggleFullWidth = () => {
+    setIsFullWidth(prev => !prev);
+  };
 
   // Load initial blockchain state
   const refreshLedgerState = async () => {
@@ -81,18 +109,27 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-      {/* Top Navigation */}
+    <div className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white ${
+      isFullWidth ? 'full-width-mode' : ''
+    }`}>
+      {/* Top Navigation with Fullscreen & Menu */}
       <Navbar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         blockHeight={chain.length}
         totalCerts={certificates.length}
         onResetLedger={handleResetLedger}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={handleToggleFullscreen}
+        isFullWidth={isFullWidth}
+        onToggleFullWidth={handleToggleFullWidth}
+        onQuickVerifyRamanan={handleQuickVerifyRamanan}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 pb-16 transition-all duration-300 ${
+        isFullWidth ? 'w-full px-2 sm:px-6 lg:px-10' : ''
+      }`}>
         {currentTab === 'overview' && (
           <FlowOverview
             onNavigate={setCurrentTab}
@@ -154,7 +191,9 @@ export default function App() {
 
       {/* Footer */}
       <footer className="no-print border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className={`mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 ${
+          isFullWidth ? 'max-w-full px-6 lg:px-10' : 'max-w-7xl'
+        }`}>
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="font-semibold text-slate-300">
@@ -163,8 +202,14 @@ export default function App() {
             <span className="text-slate-600">&bull;</span>
             <span className="text-slate-400">Principal Dr. N. MALA</span>
           </div>
-          <div className="text-slate-500">
-            SHA-256 Ledger &bull; IPFS CID &bull; Cryptographic Merkle Verification
+          <div className="flex items-center space-x-3 text-slate-500">
+            <span>SHA-256 Ledger &bull; IPFS CID &bull; Merkle Root Sealing</span>
+            <button
+              onClick={handleToggleFullscreen}
+              className="text-slate-400 hover:text-emerald-400 transition ml-2 underline underline-offset-2"
+            >
+              {isFullscreen ? 'Exit Full Screen' : 'Toggle Full Screen'}
+            </button>
           </div>
         </div>
       </footer>
